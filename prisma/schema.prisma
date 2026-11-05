@@ -1,0 +1,60 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Room {
+  id             String        @id @default(uuid())
+  code           String        @unique
+  name           String        @default("Game Room")
+  startingCash   Int           @default(25000)
+  salaryAmount   Int           @default(2000)
+  version        Int           @default(1)
+  status         String        @default("ACTIVE") // ACTIVE, COMPLETED
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  players        Player[]
+  transactions   Transaction[]
+
+  @@index([code])
+}
+
+model Player {
+  id           String        @id @default(uuid())
+  roomId       String
+  name         String
+  token        String        // e.g. "car", "hat", "dog", "ship"
+  color        String        // e.g. "emerald", "blue", "amber", "rose"
+  balance      Int           @default(25000)
+  isBanker     Boolean       @default(false)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  room         Room          @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@index([roomId])
+}
+
+model Transaction {
+  id           String        @id @default(uuid())
+  roomId       String
+  fromId       String        // "BANK" or Player.id
+  fromName     String
+  toId         String        // "BANK" or Player.id
+  toName       String
+  amount       Int
+  type         String        // SALARY, TAX, RENT, TRADE, LOAN, CUSTOM
+  note         String?
+  isReversed   Boolean       @default(false)
+  createdAt    DateTime      @default(now())
+
+  room         Room          @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@index([roomId])
+  @@index([createdAt])
+}
