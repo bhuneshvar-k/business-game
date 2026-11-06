@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useTransition } from 'react';
+import { useState, useTransition } from 'react';
 import {
   Building2,
   ArrowRight,
@@ -41,16 +41,18 @@ interface BankerTerminalProps {
 
 export function BankerTerminal({ initialRoom, onRoomUpdate }: BankerTerminalProps) {
   const [room, setRoom] = useState<RoomState>(initialRoom);
+  const [prevInitialRoom, setPrevInitialRoom] = useState<RoomState>(initialRoom);
+
+  if (initialRoom !== prevInitialRoom) {
+    setPrevInitialRoom(initialRoom);
+    setRoom(initialRoom);
+  }
+
   const [fromId, setFromId] = useState<string>(BANK_ID);
   const [toId, setToId] = useState<string>('');
   const [amountStr, setAmountStr] = useState<string>('0');
   const [type, setType] = useState<TransactionType>('CUSTOM');
   const [note, setNote] = useState<string>('');
-
-  // Keep state in sync with real-time updates from parent useRoomSync
-  useEffect(() => {
-    setRoom(initialRoom);
-  }, [initialRoom]);
 
   const [isQrOpen, setIsQrOpen] = useState(false);
   const [isPending, startTransition] = useTransition();

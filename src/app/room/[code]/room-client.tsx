@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { useRoomSync } from '@/hooks/use-room-sync';
 import { RoomState } from '@/lib/ledger/types';
 import { BankerTerminal } from '@/components/banker/banker-terminal';
@@ -16,12 +16,13 @@ interface RoomClientProps {
 }
 
 export function RoomClient({ initialRoom, roomCode }: RoomClientProps) {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const defaultMode = searchParams.get('mode') === 'banker' ? 'banker' : 'player';
   const [mode, setMode] = useState<'banker' | 'player'>(defaultMode);
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
 
-  const { room, setRoom, isLoading, isConnected } = useRoomSync({
+  const { room, setRoom, isConnected } = useRoomSync({
     roomCode,
     initialRoom,
     activePlayerId: mode === 'player' ? selectedPlayerId : null,
@@ -35,7 +36,7 @@ export function RoomClient({ initialRoom, roomCode }: RoomClientProps) {
           <p className="text-sm text-muted-foreground">
             Could not find game room with code <strong>{roomCode}</strong>.
           </p>
-          <Button onClick={() => (window.location.href = '/')}>Go to Home</Button>
+          <Button onClick={() => router.push('/')}>Go to Home</Button>
         </div>
       </div>
     );

@@ -23,7 +23,9 @@ export function useRoomSync({
   const [lastSyncedAt, setLastSyncedAt] = useState<Date | null>(null);
 
   const roomRef = useRef<RoomState | null>(initialRoom);
-  roomRef.current = room;
+  useEffect(() => {
+    roomRef.current = room;
+  }, [room]);
 
   const fetchRoom = useCallback(async () => {
     if (!roomCode) return;
@@ -99,14 +101,23 @@ export function useRoomSync({
   }, [roomCode, activePlayerId]);
 
   useEffect(() => {
-    fetchRoom();
+    let isMounted = true;
+    const load = async () => {
+      if (isMounted) {
+        await fetchRoom();
+      }
+    };
+    void load();
 
     const interval = setInterval(() => {
       if (document.hidden) return;
-      fetchRoom();
+      void fetchRoom();
     }, pollingIntervalMs);
 
-    return () => clearInterval(interval);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
   }, [fetchRoom, pollingIntervalMs]);
 
   return {

@@ -3,16 +3,13 @@
 import { useState } from 'react';
 import {
   Wallet,
-  TrendingUp,
   ArrowDownLeft,
   ArrowUpRight,
   Trophy,
   History,
-  Building2,
-  Users,
 } from 'lucide-react';
-import { RoomState, PlayerState } from '@/lib/ledger/types';
-import { PLAYER_COLORS, PLAYER_TOKENS, BANK_ID } from '@/lib/ledger/constants';
+import { RoomState } from '@/lib/ledger/types';
+import { PLAYER_COLORS, PLAYER_TOKENS } from '@/lib/ledger/constants';
 import { SoundToggle } from '../sound-toggle';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';

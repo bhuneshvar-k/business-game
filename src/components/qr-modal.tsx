@@ -22,13 +22,11 @@ interface QrModalProps {
 export function QrModal({ roomCode, isOpen, onClose }: QrModalProps) {
   const [qrDataUrl, setQrDataUrl] = useState<string>('');
   const [copied, setCopied] = useState(false);
-  const [joinUrl, setJoinUrl] = useState('');
+  const joinUrl = typeof window !== 'undefined' ? `${window.location.origin}/room/${roomCode}` : '';
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const url = `${window.location.origin}/room/${roomCode}`;
-      setJoinUrl(url);
-
       QRCode.toDataURL(url, {
         width: 280,
         margin: 2,
@@ -75,6 +73,7 @@ export function QrModal({ roomCode, isOpen, onClose }: QrModalProps) {
 
           <div className="p-3 bg-white rounded-xl border shadow-sm">
             {qrDataUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={qrDataUrl}
                 alt={`QR code for Room ${roomCode}`}

@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { Users, Plus, Trash2, ArrowRight, Dices, ShieldCheck } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { CreatePlayerInput, PlayerColor, PlayerToken } from '@/lib/ledger/types';
 import {
   DEFAULT_STARTING_CASH,
