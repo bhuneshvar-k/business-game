@@ -19,10 +19,12 @@ export function RoomClient({ initialRoom, roomCode }: RoomClientProps) {
   const searchParams = useSearchParams();
   const defaultMode = searchParams.get('mode') === 'banker' ? 'banker' : 'player';
   const [mode, setMode] = useState<'banker' | 'player'>(defaultMode);
+  const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
 
   const { room, setRoom, isLoading, isConnected } = useRoomSync({
     roomCode,
     initialRoom,
+    activePlayerId: mode === 'player' ? selectedPlayerId : null,
   });
 
   if (!room) {
@@ -81,7 +83,11 @@ export function RoomClient({ initialRoom, roomCode }: RoomClientProps) {
         {mode === 'banker' ? (
           <BankerTerminal initialRoom={room} onRoomUpdate={setRoom} />
         ) : (
-          <PlayerWallet room={room} />
+          <PlayerWallet
+            room={room}
+            selectedPlayerId={selectedPlayerId}
+            onSelectPlayer={setSelectedPlayerId}
+          />
         )}
       </main>
     </div>

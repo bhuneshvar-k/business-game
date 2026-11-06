@@ -39,7 +39,6 @@ export function useRoomSync({
       });
 
       if (res.status === 304) {
-        // Nothing changed!
         setIsConnected(true);
         setLastSyncedAt(new Date());
         return;
@@ -50,21 +49,37 @@ export function useRoomSync({
         const prev = roomRef.current;
 
         if (prev && updatedRoom.version > prev.version) {
-          // Play audio notification based on recent transaction
-          const latestTx = updatedRoom.transactions[0];
-          if (latestTx && !latestTx.isReversed) {
-            if (activePlayerId) {
-              if (latestTx.toId === activePlayerId) {
-                soundManager.playCashChime();
-              } else if (latestTx.fromId === activePlayerId) {
-                soundManager.playTransferBeep();
-              }
-            } else {
-              // Banker view
-              if (latestTx.type === 'SALARY') {
-                soundManager.playCashChime();
-              } else {
-                soundManager.playTransferBeep();
+          // 1. Check if a transaction was reversed (Undo)
+          const newlyReversedTx = updatedRoom.transactions.find(
+            (tx) => tx.isReversed && !prev.transactions.find((p) => p.id === tx.id)?.isReversed
+          );
+
+          if (newlyReversedTx) {
+            const isRelevant =
+              !activePlayerId ||
+              newlyReversedTx.fromId === activePlayerId ||
+              newlyReversedTx.toId === activePlayerId;
+
+            if (isRelevant) {
+              soundManager.playUndoSound();
+              soundManager.announceUndo(newlyReversedTx);
+            }
+          } else {
+            // 2. Check for newly added transaction
+            const latestTx = updatedRoom.transactions[0];
+            if (latestTx && !latestTx.isReversed && latestTx.id !== prev.transactions[0]?.id) {
+              const isRelevant =
+                !activePlayerId ||
+                latestTx.fromId === activePlayerId ||
+                latestTx.toId === activePlayerId;
+
+              if (isRelevant) {
+                if (latestTx.type === 'SALARY') {
+                  soundManager.playCashChime();
+                } else {
+                  soundManager.playTransferBeep();
+                }
+                soundManager.announceTransaction(latestTx);
               }
             }
           }
@@ -87,7 +102,6 @@ export function useRoomSync({
     fetchRoom();
 
     const interval = setInterval(() => {
-      // Don't poll aggressively if tab is backgrounded
       if (document.hidden) return;
       fetchRoom();
     }, pollingIntervalMs);

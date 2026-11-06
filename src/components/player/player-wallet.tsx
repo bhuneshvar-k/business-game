@@ -31,10 +31,26 @@ import {
 interface PlayerWalletProps {
   room: RoomState;
   initialPlayerId?: string | null;
+  selectedPlayerId?: string | null;
+  onSelectPlayer?: (playerId: string | null) => void;
 }
 
-export function PlayerWallet({ room, initialPlayerId = null }: PlayerWalletProps) {
-  const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(initialPlayerId);
+export function PlayerWallet({
+  room,
+  initialPlayerId = null,
+  selectedPlayerId: controlledPlayerId,
+  onSelectPlayer,
+}: PlayerWalletProps) {
+  const [internalPlayerId, setInternalPlayerId] = useState<string | null>(initialPlayerId);
+
+  const selectedPlayerId = controlledPlayerId !== undefined ? controlledPlayerId : internalPlayerId;
+  const setSelectedPlayerId = (id: string | null) => {
+    if (onSelectPlayer) {
+      onSelectPlayer(id);
+    } else {
+      setInternalPlayerId(id);
+    }
+  };
 
   const activePlayer = room.players.find((p) => p.id === selectedPlayerId);
   const sortedPlayers = [...room.players].sort((a, b) => b.balance - a.balance);

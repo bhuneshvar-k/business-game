@@ -85,6 +85,15 @@ export function BankerTerminal({ initialRoom, onRoomUpdate }: BankerTerminalProp
       if (res.success) {
         updateState(res.room);
         soundManager.playCashChime();
+        soundManager.announceTransaction({
+          id: res.transaction.id,
+          fromId: BANK_ID,
+          fromName: BANK_NAME,
+          toId: player.id,
+          toName: player.name,
+          amount: room.salaryAmount,
+          type: 'SALARY',
+        });
         confetti({
           particleCount: 40,
           spread: 60,
@@ -122,6 +131,16 @@ export function BankerTerminal({ initialRoom, onRoomUpdate }: BankerTerminalProp
         } else {
           soundManager.playTransferBeep();
         }
+
+        soundManager.announceTransaction({
+          id: res.transaction.id,
+          fromId: res.transaction.fromId,
+          fromName: res.transaction.fromName,
+          toId: res.transaction.toId,
+          toName: res.transaction.toName,
+          amount: res.transaction.amount,
+          type: res.transaction.type,
+        });
       } else {
         if (res.code === 'INSUFFICIENT_FUNDS') {
           const fromPlayer = room.players.find((p) => p.id === fromId);
@@ -148,6 +167,14 @@ export function BankerTerminal({ initialRoom, onRoomUpdate }: BankerTerminalProp
       if (res.success) {
         updateState(res.room);
         soundManager.playUndoSound();
+        soundManager.announceUndo({
+          id: res.reversedTransaction.id,
+          fromId: res.reversedTransaction.fromId,
+          fromName: res.reversedTransaction.fromName,
+          toId: res.reversedTransaction.toId,
+          toName: res.reversedTransaction.toName,
+          amount: res.reversedTransaction.amount,
+        });
       } else {
         alert(res.error);
       }
