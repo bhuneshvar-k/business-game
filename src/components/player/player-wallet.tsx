@@ -7,10 +7,12 @@ import {
   ArrowUpRight,
   Trophy,
   History,
+  UserCheck,
 } from 'lucide-react';
 import { RoomState } from '@/lib/ledger/types';
 import { PLAYER_COLORS, PLAYER_TOKENS } from '@/lib/ledger/constants';
 import { SoundToggle } from '../sound-toggle';
+import { cn } from '@/lib/utils';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -55,25 +57,32 @@ export function PlayerWallet({
   // If no player selected, display the player selection screen
   if (!activePlayer) {
     return (
-      <div className="max-w-md mx-auto space-y-6 py-8 px-4">
-        <div className="text-center space-y-2">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-primary text-primary-foreground text-2xl shadow">
+      <div className="max-w-md mx-auto space-y-5 py-6 px-4">
+        <div className="text-center space-y-1.5">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-primary text-primary-foreground text-2xl shadow-sm">
             💼
           </div>
           <h1 className="text-2xl font-black tracking-tight">{room.name}</h1>
           <p className="text-xs text-muted-foreground">
-            Select your player name to access your live digital wallet.
+            Tap your player name below to access your live digital wallet.
           </p>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Who are you playing as?</CardTitle>
+        <Card className="shadow-md border-2 border-border">
+          <CardHeader className="p-4 pb-2">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
+                Select Your Player Card
+              </CardTitle>
+              <Badge variant="outline" className="font-mono text-xs">
+                {room.code}
+              </Badge>
+            </div>
             <CardDescription className="text-xs">
-              Room Code: <strong className="font-mono text-foreground">{room.code}</strong>
+              All balances update live automatically.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="p-4 pt-2 space-y-2.5">
             {room.players.map((player) => {
               const tokenMeta = PLAYER_TOKENS.find((t) => t.id === player.token) || PLAYER_TOKENS[0];
               const colorMeta = PLAYER_COLORS[player.color] || PLAYER_COLORS.emerald;
@@ -82,23 +91,23 @@ export function PlayerWallet({
                 <button
                   key={player.id}
                   onClick={() => setSelectedPlayerId(player.id)}
-                  className="w-full p-4 rounded-xl border bg-card hover:bg-muted/50 transition-all flex items-center justify-between text-left shadow-sm group"
+                  className="w-full p-3.5 rounded-xl border bg-card hover:border-primary/50 hover:bg-muted/40 transition-all flex items-center justify-between text-left shadow-sm group active:scale-[0.99]"
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
                     <div
-                      className={`w-11 h-11 rounded-xl flex items-center justify-center text-2xl shadow-inner border ${colorMeta.badgeClass}`}
+                      className={`w-11 h-11 rounded-xl flex items-center justify-center text-xl shadow-inner border flex-shrink-0 ${colorMeta.badgeClass}`}
                     >
                       {tokenMeta.emoji}
                     </div>
-                    <div>
-                      <div className="font-bold text-sm text-foreground group-hover:text-primary transition">
+                    <div className="min-w-0">
+                      <div className="font-bold text-sm text-foreground group-hover:text-primary transition truncate">
                         {player.name}
                       </div>
-                      <div className="text-xs text-muted-foreground">{tokenMeta.label}</div>
+                      <div className="text-[11px] text-muted-foreground">{tokenMeta.label}</div>
                     </div>
                   </div>
 
-                  <div className="text-right">
+                  <div className="text-right flex-shrink-0">
                     <span className="font-mono font-black text-base">
                       ${player.balance.toLocaleString()}
                     </span>
@@ -116,75 +125,78 @@ export function PlayerWallet({
   const colorMeta = PLAYER_COLORS[activePlayer.color] || PLAYER_COLORS.emerald;
   const playerRank = sortedPlayers.findIndex((p) => p.id === activePlayer.id) + 1;
 
-  // Filter player's personal transactions
-  const personalTransactions = room.transactions.filter(
-    (t) => (t.fromId === activePlayer.id || t.toId === activePlayer.id) && !t.isReversed
-  );
+  // Filter player's personal transactions (show up to 50 most recent)
+  const personalTransactions = room.transactions
+    .filter((t) => t.fromId === activePlayer.id || t.toId === activePlayer.id)
+    .slice(0, 50);
 
   return (
-    <div className="max-w-lg mx-auto space-y-5 py-4 px-4 pb-12">
-      {/* Top Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Badge variant="outline" className="font-mono text-xs">
-            Room: {room.code}
-          </Badge>
-          <span className="text-xs text-muted-foreground">v{room.version}</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setSelectedPlayerId(null)}
-            className="text-xs text-muted-foreground"
-          >
-            Switch Player
-          </Button>
+    <div className="max-w-md mx-auto space-y-4 py-2 px-3 sm:px-4 pb-12">
+      {/* Top Header Card */}
+      <Card className="border shadow-sm">
+        <CardContent className="p-3 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <Badge variant="outline" className="font-mono text-xs font-bold">
+              {room.code}
+            </Badge>
+            <span className="text-[11px] text-muted-foreground font-mono">v{room.version}</span>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSelectedPlayerId(null)}
+              className="text-xs h-7 px-2 text-muted-foreground hover:text-foreground"
+            >
+              <UserCheck className="w-3.5 h-3.5 mr-1" />
+              <span>Switch</span>
+            </Button>
+          </div>
+
           <SoundToggle />
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
       {/* Main Digital Balance Card */}
-      <Card className="border-2 shadow-lg overflow-hidden relative">
+      <Card className="border-2 shadow-lg overflow-hidden">
         <div className={`h-2.5 w-full bg-gradient-to-r ${colorMeta.gradientClass}`} />
-        <CardContent className="p-6 space-y-4">
+        <CardContent className="p-4 sm:p-5 space-y-4">
           
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div
-                className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl shadow-inner border ${colorMeta.badgeClass}`}
+                className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl shadow-inner border flex-shrink-0 ${colorMeta.badgeClass}`}
               >
                 {tokenMeta.emoji}
               </div>
               <div>
-                <h2 className="text-lg font-black tracking-tight">{activePlayer.name}</h2>
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <h2 className="text-lg font-black tracking-tight leading-tight">{activePlayer.name}</h2>
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5">
                   <span>{tokenMeta.label}</span>
                   <span>•</span>
-                  <Badge variant="secondary" className="text-[10px] py-0">
+                  <Badge variant="secondary" className="text-[10px] py-0 px-1.5 font-bold">
                     Rank #{playerRank} of {room.players.length}
                   </Badge>
                 </div>
               </div>
             </div>
 
-            <Wallet className="w-6 h-6 text-muted-foreground/40" />
+            <Wallet className="w-6 h-6 text-muted-foreground/40 flex-shrink-0" />
           </div>
 
           {/* Balance Big Display */}
-          <div className="bg-slate-950 text-white rounded-2xl p-5 shadow-inner space-y-1 text-center">
-            <div className="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">
+          <div className="bg-slate-950 text-white rounded-2xl p-4 sm:p-5 shadow-inner space-y-1 text-center border border-slate-800">
+            <div className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">
               Current Liquid Balance
             </div>
             <div
-              className={`text-4xl font-mono font-black tracking-tight ${
-                activePlayer.balance < 0 ? 'text-destructive' : 'text-emerald-400'
-              }`}
+              className={cn('text-3xl sm:text-4xl font-mono font-black tracking-tight', {
+                'text-destructive': activePlayer.balance < 0,
+                'text-emerald-400': activePlayer.balance >= 0,
+              })}
             >
               ${activePlayer.balance.toLocaleString()}
             </div>
-            <div className="text-[10px] text-slate-400 pt-1">
-              Started with ${room.startingCash.toLocaleString()}
+            <div className="text-[10px] text-slate-400 font-medium pt-0.5">
+              Starting Cash: ${room.startingCash.toLocaleString()}
             </div>
           </div>
 
@@ -193,19 +205,19 @@ export function PlayerWallet({
 
       {/* Tabs: Personal Feed vs Live Leaderboard */}
       <Tabs defaultValue="history" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="history" className="gap-2 font-bold text-xs">
+        <TabsList className="grid w-full grid-cols-2 h-10">
+          <TabsTrigger value="history" className="gap-1.5 font-bold text-xs">
             <History className="w-3.5 h-3.5" />
             <span>My Transactions</span>
           </TabsTrigger>
-          <TabsTrigger value="leaderboard" className="gap-2 font-bold text-xs">
+          <TabsTrigger value="leaderboard" className="gap-1.5 font-bold text-xs">
             <Trophy className="w-3.5 h-3.5" />
             <span>Table Leaderboard</span>
           </TabsTrigger>
         </TabsList>
 
         {/* Tab 1: Personal Transaction Stream */}
-        <TabsContent value="history" className="space-y-3 pt-2">
+        <TabsContent value="history" className="space-y-2 pt-2">
           {personalTransactions.length === 0 ? (
             <Card>
               <CardContent className="p-8 text-center text-muted-foreground text-xs">
@@ -217,15 +229,20 @@ export function PlayerWallet({
               {personalTransactions.map((tx) => {
                 const isIncoming = tx.toId === activePlayer.id;
                 return (
-                  <Card key={tx.id} className="shadow-none border">
-                    <CardContent className="p-3.5 flex items-center justify-between gap-3">
-                      <div className="flex items-center gap-3">
+                  <Card
+                    key={tx.id}
+                    className={cn('shadow-none border transition-opacity', {
+                      'opacity-50 bg-muted/30': tx.isReversed,
+                    })}
+                  >
+                    <CardContent className="p-3 flex items-center justify-between gap-2.5">
+                      <div className="flex items-center gap-2.5 min-w-0">
                         <div
-                          className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ${
-                            isIncoming
-                              ? 'bg-emerald-100 text-emerald-700'
-                              : 'bg-destructive/10 text-destructive'
-                          }`}
+                          className={cn('w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0', {
+                            'bg-muted text-muted-foreground': tx.isReversed,
+                            'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400': !tx.isReversed && isIncoming,
+                            'bg-destructive/15 text-destructive': !tx.isReversed && !isIncoming,
+                          })}
                         >
                           {isIncoming ? (
                             <ArrowDownLeft className="w-4 h-4" />
@@ -234,22 +251,35 @@ export function PlayerWallet({
                           )}
                         </div>
 
-                        <div>
-                          <div className="text-xs font-bold text-foreground">
-                            {isIncoming ? `Received from ${tx.fromName}` : `Paid to ${tx.toName}`}
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span
+                              className={cn('text-xs font-bold text-foreground truncate', {
+                                'line-through text-muted-foreground': tx.isReversed,
+                              })}
+                            >
+                              {isIncoming ? `From ${tx.fromName}` : `To ${tx.toName}`}
+                            </span>
+                            {tx.isReversed && (
+                              <Badge variant="destructive" className="text-[9px] py-0 px-1 font-bold">
+                                Reversed
+                              </Badge>
+                            )}
                           </div>
-                          <div className="text-[10px] text-muted-foreground flex items-center gap-1.5">
-                            <span className="font-semibold">{tx.type}</span>
+                          <div className="text-[10px] text-muted-foreground flex items-center gap-1.5 truncate">
+                            <span className="font-semibold uppercase">{tx.type}</span>
                             {tx.note && <span>• {tx.note}</span>}
                           </div>
                         </div>
                       </div>
 
-                      <div className="text-right">
+                      <div className="text-right flex-shrink-0">
                         <span
-                          className={`font-mono font-black text-sm ${
-                            isIncoming ? 'text-emerald-600' : 'text-destructive'
-                          }`}
+                          className={cn('font-mono font-black text-sm', {
+                            'line-through text-muted-foreground': tx.isReversed,
+                            'text-emerald-600 dark:text-emerald-400': !tx.isReversed && isIncoming,
+                            'text-destructive': !tx.isReversed && !isIncoming,
+                          })}
                         >
                           {isIncoming ? '+' : '-'}${tx.amount.toLocaleString()}
                         </span>
@@ -279,7 +309,12 @@ export function PlayerWallet({
                     const isMe = player.id === activePlayer.id;
                     const token = PLAYER_TOKENS.find((t) => t.id === player.token);
                     return (
-                      <TableRow key={player.id} className={isMe ? 'bg-primary/5 font-bold' : ''}>
+                      <TableRow
+                        key={player.id}
+                        className={cn({
+                          'bg-primary/5 font-bold': isMe,
+                        })}
+                      >
                         <TableCell className="text-center font-bold text-xs">
                           {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : index + 1}
                         </TableCell>

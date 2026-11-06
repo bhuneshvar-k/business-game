@@ -85,7 +85,7 @@ export class PrismaStorageAdapter implements StorageAdapter {
         },
       },
       include: {
-        players: true,
+        players: { orderBy: { createdAt: 'asc' } },
         transactions: true,
       },
     });

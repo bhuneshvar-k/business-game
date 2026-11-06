@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Volume2, VolumeX, Mic, MicOff } from 'lucide-react';
 import { soundManager } from '@/lib/sound/audio-effects';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 export function SoundToggle() {
   const [soundEnabled, setSoundEnabled] = useState(soundManager.enabled);
@@ -35,9 +36,10 @@ export function SoundToggle() {
         size="sm"
         onClick={toggleVoice}
         title={voiceEnabled ? 'Mute Voice Announcements' : 'Enable Voice Announcements'}
-        className={`h-8 px-2.5 gap-1.5 text-xs font-semibold ${
-          voiceEnabled ? 'bg-primary/5 text-primary border-primary/30' : 'text-muted-foreground'
-        }`}
+        className={cn('h-8 px-2.5 gap-1.5 text-xs font-semibold', {
+          'bg-primary/5 text-primary border-primary/30': voiceEnabled,
+          'text-muted-foreground': !voiceEnabled,
+        })}
       >
         {voiceEnabled ? (
           <>
@@ -58,9 +60,10 @@ export function SoundToggle() {
         size="sm"
         onClick={toggleSound}
         title={soundEnabled ? 'Mute Sound Effects' : 'Enable Sound Effects'}
-        className={`h-8 px-2.5 gap-1.5 text-xs font-semibold ${
-          soundEnabled ? 'bg-primary/5 text-primary border-primary/30' : 'text-muted-foreground'
-        }`}
+        className={cn('h-8 px-2.5 gap-1.5 text-xs font-semibold', {
+          'bg-primary/5 text-primary border-primary/30': soundEnabled,
+          'text-muted-foreground': !soundEnabled,
+        })}
       >
         {soundEnabled ? (
           <>
